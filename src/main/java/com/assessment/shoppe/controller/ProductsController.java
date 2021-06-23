@@ -20,7 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.assessment.shoppe.repo.ProductRepository;
 import com.assessment.shoppe.service.ProductService;
+import com.assessment.shoppe.service.CustomerService;
 import com.assessment.shoppe.util.PurchaseRequest;
+import com.assessment.shoppe.util.ResponseObject;
+import com.assessment.shoppe.model.Customer;
 import com.assessment.shoppe.model.Product;
 
 
@@ -32,47 +35,37 @@ public class ProductsController {
 	@Autowired
 	private ProductService productService;
 	
+	@Autowired
+	private CustomerService customerService;
+	
 	@RequestMapping(value = "/get/all", method = RequestMethod.GET)
 	public List<Product> getAllProducts() {
 		return productService.findAll();		
 	}
 	
 	@RequestMapping(value = "/purchase", method = RequestMethod.POST)
-	public ResponseEntity purchaseWithId(@RequestBody PurchaseRequest purchaseRequest) {
+	public ResponseEntity purchaseWithId(@RequestBody PurchaseRequest purchaseRequest) {		
+		logger.info("Received request with customer id: " + purchaseRequest.getCustomerId() + ", products: " + purchaseRequest.getProducts());
 		
-		//The customer ID does not exist
-		if(){
-			
-		}
+		ResponseObject response = new ResponseObject(); 
 		
-		//The customer does not have enough points
-		if(){
-			
+		
+		if(!customerExists(purchaseRequest.getCustomerId())){	//The customer ID does not exist		
+			response.setResultCode("1");
+			response.setResultMsg("Cusromer Does not Exist.");					
+		}else if(purchaseRequest.getProducts().isEmpty()){ //The customer did not provide any products to purchase
+			response.setResultCode("1");
+			response.setResultMsg("No products provided for purchase.");		   
 		}
 
-		//The customer did not provide any products to purchase
-		if(){
-			
-		}
-		
-		//The customer chose a non-existent product code
-		if(){
-			
-		}
-			
+		return new ResponseEntity<>(response, HttpStatus.OK);		
 	}
+
 	
-	private boolean existProduct(Product product){
-		return findProductById(product.getId()) != null || findProductByCode(product.getCode())  != null;
+	private boolean customerExists(int customerId){
+		return customerService.findCustomerById(customerId) != null;
 	}
-	
-	private Product findProductById(int id){
-		return productService.findProductById(id);
-	}
-	
-	private Product findProductByCode(String code){
-		return productService.findProductByCode(code);
-	}
+
 
 }
 
