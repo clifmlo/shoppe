@@ -24,6 +24,7 @@ import com.assessment.shoppe.service.CustomerService;
 import com.assessment.shoppe.service.ActiveDayService;
 import com.assessment.shoppe.util.PurchaseRequest;
 import com.assessment.shoppe.util.ResponseObject;
+import com.assessment.shoppe.model.ActiveDay;
 import com.assessment.shoppe.model.Customer;
 import com.assessment.shoppe.model.Product;
 
@@ -92,12 +93,12 @@ public class ProductsController {
 			return new ResponseEntity<>(response, HttpStatus.OK);	
 	    }
 		
-//	    	processPurchase(purchaseRequest);
-//	    	response.setResultCode("0");
-//			response.setResultMsg("Purchase Processed sucessfully");
-//		    return new ResponseEntity<>(response, HttpStatus.OK);		
-//	    return new ResponseEntity<>(response, HttpStatus.OK);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		//Process transaction
+	    processPurchase(purchaseRequest); 
+    	response.setResultCode("0");
+		response.setResultMsg("Purchase Processed sucessfully");
+		
+	    return new ResponseEntity<>(response, HttpStatus.OK);		
 	}
 	
 	private List<Product> productsExist(List<Product> products){
@@ -121,11 +122,7 @@ public class ProductsController {
 	}
 	
 	private boolean customerHasEnoughtPoints(PurchaseRequest purchaseRequest) {
-		List<String> productCodes = new ArrayList();		
-		purchaseRequest.getProducts().stream()
-									.filter(p -> p.getCode() != null)
-									.forEach(filtered -> productCodes.add(filtered.getCode()));
-																								
+		List<String> productCodes = getProductCodes(purchaseRequest);																					
 		List<Product> products = findProductsByCodes(productCodes);
 		 
 		int totalPointRequired = calculateTotalPoints(products);
@@ -135,8 +132,9 @@ public class ProductsController {
     }
 
     
-	private int getTotalCustomerPoints(int customerId){
-		return activeDayService.getTotalCustomerPoints(customerId); 
+	private Integer getTotalCustomerPoints(int customerId){		
+		ActiveDay activeDay = activeDayService.getTotalCustomerPoints(customerId);
+	    return Integer.valueOf(activeDay.getTotalPoints());
 	}
 	
 	private int calculateTotalPoints(List<Product> products) { 		
@@ -157,11 +155,28 @@ public class ProductsController {
 		}
 		return customerTotalPoints >= totalPointsRequired;
 	}
-//	
-//	private int processPurchase(PurchaseRequest purchaseRequest) {
-//		return 9;
-//	}
-//	
+	
+	private List<String> getProductCodes(PurchaseRequest purchaseRequest) {
+		List<String> productCodes = new ArrayList();		
+		purchaseRequest.getProducts().stream()
+									.filter(p -> p.getCode() != null)
+									.forEach(filtered -> productCodes.add(filtered.getCode()));
+		
+		return productCodes;
+	}
+	
+	private void processPurchase(PurchaseRequest purchaseRequest) {
+		List<String> productCodes = getProductCodes(purchaseRequest);																					
+		List<Product> products = findProductsByCodes(productCodes);		 
+		int totalPointRequired = calculateTotalPoints(products);
+		int customerTotalPoints = getTotalCustomerPoints(purchaseRequest.getCustomerId());		
+		int balance = customerTotalPoints - totalPointRequired;
+		
+		ActiveDay activeDay = activeDayService.getTotalCustomerPoints(purchaseRequest.getCustomerId());
+		activeDay.setTotalPoints(balance);
+		activeDayService.updateCustomerPoints(activeDay);
+	}
+	
 
 
 }

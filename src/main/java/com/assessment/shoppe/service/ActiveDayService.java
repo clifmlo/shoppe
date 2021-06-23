@@ -20,14 +20,13 @@ public class ActiveDayService {
 	private ActiveDayRepository activeDayRepo;
 	
 	@Transactional(readOnly=true)
-	public Integer getTotalCustomerPoints(int customerId){	
+	public ActiveDay getTotalCustomerPoints(int customerId){	
 		
 		try{		
-			ActiveDay activeDay = activeDayRepo.getByCustomerId(customerId);
-			
+			ActiveDay activeDay = activeDayRepo.getByCustomerId(customerId);			
 			if(activeDay != null){				
 				logger.info("total customer points : " + activeDay.getTotalPoints());
-				return Integer.valueOf(activeDay.getTotalPoints());				
+				return activeDay;			
 			}else{
 				logger.info("No active days found.");
 				return null;
@@ -37,4 +36,14 @@ public class ActiveDayService {
 			return null;
 		}
 	}
+	
+	public void updateCustomerPoints(ActiveDay activeDay){
+		try{		
+			activeDayRepo.save(activeDay); //updates the points balance			
+			logger.info("Customer points balance updated sucessfully ");			
+		}catch (Exception e){
+			logger.info("Error occured while trying to update customer points balance.");	
+			e.printStackTrace();			
+		}	
+	}	
 }

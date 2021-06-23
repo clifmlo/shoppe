@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.assessment.shoppe.model.ActiveDay;
 import com.assessment.shoppe.model.Product;
 import com.assessment.shoppe.repo.ProductRepository;
 
@@ -65,4 +66,5 @@ public class ProductService {
 			return null;
 		}		
    }
+   	
 }
