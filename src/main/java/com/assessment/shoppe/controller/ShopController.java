@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ShopController {
 
-	@RequestMapping("/")
+	@RequestMapping("/shop")
 	public String welcome(HttpServletRequest req) {
 		
 		return "Welcome to points shopping servce!";
