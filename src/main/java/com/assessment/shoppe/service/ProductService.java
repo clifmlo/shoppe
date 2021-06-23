@@ -19,24 +19,34 @@ public class ProductService {
 	private ProductRepository productRepo;
 	
 	@Transactional(readOnly=true)
-	public List<Product> findAll(){
-		List<Product>  products  = new ArrayList();
-		
+	public List<Product> findAll(){		
 		try{		
-			products = (List<Product>) productRepo.findAll();
-			logger.info("products result size: " + products.size());
+			List<Product> products = (List<Product>) productRepo.findAll();
+			
+			if(products != null){
+				logger.info("products result size: " + products.size());
+			}else{
+				logger.info("No products found.");
+			}
+			return products;
 		}catch (Exception e){
-			e.printStackTrace();			
+			e.printStackTrace();
+			return null;
 		}
-		
-		return products;
 	}
-	
-	public Product findProductById(int id){
-		return productRepo.getById(id);
-	}
-	
-	public Product findProductByCode(String code){
-		return productRepo.getByCode(code);
+
+	public Product findProductByCode(String code){		
+		try{		
+			Product product = productRepo.getByCode(code);
+			if(product != null){
+				logger.info("returned product: " + product.toString());
+			}else{
+				logger.info("No product found.");
+			}	
+			return product;
+		}catch (Exception e){
+			e.printStackTrace();
+			return null;
+		}		
 	}
 }

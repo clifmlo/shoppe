@@ -44,28 +44,56 @@ public class ProductsController {
 	}
 	
 	@RequestMapping(value = "/purchase", method = RequestMethod.POST)
-	public ResponseEntity purchaseWithId(@RequestBody PurchaseRequest purchaseRequest) {		
-		logger.info("Received request with customer id: " + purchaseRequest.getCustomerId() + ", products: " + purchaseRequest.getProducts());
+	public ResponseEntity purchase(@RequestBody PurchaseRequest purchaseRequest) {		
+		logger.info("Received request: " + purchaseRequest.toString());
 		
 		ResponseObject response = new ResponseObject(); 
-		
-		
+		List<Product> nonExistentProducts = new ArrayList();
+				
 		if(!customerExists(purchaseRequest.getCustomerId())){	//The customer ID does not exist		
 			response.setResultCode("1");
-			response.setResultMsg("Cusromer Does not Exist.");					
-		}else if(purchaseRequest.getProducts().isEmpty()){ //The customer did not provide any products to purchase
+			response.setResultMsg("Purchase Failed. Customer Does not Exist.");			
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);			
+		}
+		
+		if(purchaseRequest.getProducts() != null && purchaseRequest.getProducts().isEmpty()){ //The customer did not provide any products to purchase
 			response.setResultCode("1");
-			response.setResultMsg("No products provided for purchase.");		   
+			response.setResultMsg("Purchase Failed. No products provided for purchase.");			
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);				
+		}
+		
+		if(purchaseRequest.getProducts() != null){
+			nonExistentProducts = productsExist(purchaseRequest.getProducts());
+		}
+				
+		if(!nonExistentProducts.isEmpty()){ //The customer chose non-existent product(s) code
+			List<String> nonExistentProductCodes = new ArrayList();
+			nonExistentProducts.forEach(p -> nonExistentProductCodes.add(p.getCode()));
+			response.setResultCode("1");
+			response.setResultMsg("Purchase Failed. The following poduct code(s) were not found: " + nonExistentProductCodes.toString());	
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);		
 		}
 
-		return new ResponseEntity<>(response, HttpStatus.OK);		
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	
+	private List<Product> productsExist(List<Product> products){
+		List<Product> nonExistentProducts = products.stream()
+														.filter(p -> findProductByCode(p.getCode()) == null)													
+														.collect(Collectors.toList());
+		
+		return nonExistentProducts;
+	}
 	
 	private boolean customerExists(int customerId){
 		return customerService.findCustomerById(customerId) != null;
 	}
-
-
+	
+	private Product findProductByCode(String code){
+		return productService.findProductByCode(code);
+	}
 }
 

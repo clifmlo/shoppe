@@ -25,6 +25,11 @@ public class PurchaseRequest {
 	public void setProducts(List<Product> products) {
 		this.products = products;
 	}
+
+	public String toString() {
+		return "PurchaseRequest [customerId=" + customerId + ", products="
+				+ products + "]";
+	}
 }
 
 
