@@ -13,4 +13,7 @@ import com.assessment.shoppe.model.Product;
 public interface ProductRepository extends CrudRepository<Product, Integer> {
 	@Query("SELECT p FROM Product p WHERE p.code = :code")
 	public Product getByCode(@Param("code") String code);
+	
+	@Query("FROM Product p WHERE p.code IN (:codes)")
+	List<Product> findProductsByCodes(@Param("codes") List<String> codes);
 }

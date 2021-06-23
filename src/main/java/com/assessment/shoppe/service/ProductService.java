@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.assessment.shoppe.model.Product;
 import com.assessment.shoppe.repo.ProductRepository;
 
@@ -48,5 +49,20 @@ public class ProductService {
 			e.printStackTrace();
 			return null;
 		}		
-	}
+   }
+	
+	public List<Product> findProductsByCodes(List<String> codes){		
+		try{		
+			List<Product> products = productRepo.findProductsByCodes(codes);
+			if(products != null){
+				logger.info("returned products: " + products.size());
+			}else{
+				logger.info("No products found.");
+			}	
+			return products;
+		}catch (Exception e){
+			e.printStackTrace();
+			return null;
+		}		
+   }
 }

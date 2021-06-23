@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.assessment.shoppe.repo.ProductRepository;
 import com.assessment.shoppe.service.ProductService;
 import com.assessment.shoppe.service.CustomerService;
+import com.assessment.shoppe.service.ActiveDayService;
 import com.assessment.shoppe.util.PurchaseRequest;
 import com.assessment.shoppe.util.ResponseObject;
 import com.assessment.shoppe.model.Customer;
@@ -30,13 +31,16 @@ import com.assessment.shoppe.model.Product;
 @RestController
 @RequestMapping("/product")
 public class ProductsController {
-	Logger logger = LoggerFactory.getLogger(ProductService.class);
+	Logger logger = LoggerFactory.getLogger(ProductsController.class);
 	
 	@Autowired
 	private ProductService productService;
 	
 	@Autowired
 	private CustomerService customerService;
+	
+	@Autowired
+	private ActiveDayService activeDayService;
 	
 	@RequestMapping(value = "/get/all", method = RequestMethod.GET)
 	public List<Product> getAllProducts() {
@@ -50,25 +54,28 @@ public class ProductsController {
 		ResponseObject response = new ResponseObject(); 
 		List<Product> nonExistentProducts = new ArrayList();
 				
-		if(!customerExists(purchaseRequest.getCustomerId())){	//The customer ID does not exist		
+		//The customer ID does not exist	
+		if(!customerExists(purchaseRequest.getCustomerId())){		
 			response.setResultCode("1");
 			response.setResultMsg("Purchase Failed. Customer Does not Exist.");			
 			
 			return new ResponseEntity<>(response, HttpStatus.OK);			
 		}
 		
-		if(purchaseRequest.getProducts() != null && purchaseRequest.getProducts().isEmpty()){ //The customer did not provide any products to purchase
+		//The customer did not provide any products to purchase
+		if(purchaseRequest.getProducts() != null && purchaseRequest.getProducts().isEmpty()){ 
 			response.setResultCode("1");
 			response.setResultMsg("Purchase Failed. No products provided for purchase.");			
 			
 			return new ResponseEntity<>(response, HttpStatus.OK);				
 		}
 		
-		if(purchaseRequest.getProducts() != null){
+		if(purchaseRequest.getProducts() != null){		
 			nonExistentProducts = productsExist(purchaseRequest.getProducts());
 		}
-				
-		if(!nonExistentProducts.isEmpty()){ //The customer chose non-existent product(s) code
+		
+		//The customer chose non-existent product(s) code		
+		if(!nonExistentProducts.isEmpty()){ 
 			List<String> nonExistentProductCodes = new ArrayList();
 			nonExistentProducts.forEach(p -> nonExistentProductCodes.add(p.getCode()));
 			response.setResultCode("1");
@@ -76,7 +83,20 @@ public class ProductsController {
 			
 			return new ResponseEntity<>(response, HttpStatus.OK);		
 		}
-
+		
+		//The customer does not have enough points
+		if(!customerHasEnoughtPoints(purchaseRequest)){ 
+			response.setResultCode("1");
+			response.setResultMsg("Purchase Failed. Customer Does not have enough points.");	
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);	
+	    }
+		
+//	    	processPurchase(purchaseRequest);
+//	    	response.setResultCode("0");
+//			response.setResultMsg("Purchase Processed sucessfully");
+//		    return new ResponseEntity<>(response, HttpStatus.OK);		
+//	    return new ResponseEntity<>(response, HttpStatus.OK);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
@@ -95,5 +115,54 @@ public class ProductsController {
 	private Product findProductByCode(String code){
 		return productService.findProductByCode(code);
 	}
+	
+	private List<Product> findProductsByCodes(List<String> codes){
+		return productService.findProductsByCodes(codes);
+	}
+	
+	private boolean customerHasEnoughtPoints(PurchaseRequest purchaseRequest) {
+		List<String> productCodes = new ArrayList();		
+		purchaseRequest.getProducts().stream()
+									.filter(p -> p.getCode() != null)
+									.forEach(filtered -> productCodes.add(filtered.getCode()));
+																								
+		List<Product> products = findProductsByCodes(productCodes);
+		 
+		int totalPointRequired = calculateTotalPoints(products);
+		int customerTotalPoints = getTotalCustomerPoints(purchaseRequest.getCustomerId());
+		
+		return isSuffientPoints(totalPointRequired, customerTotalPoints);
+    }
+
+    
+	private int getTotalCustomerPoints(int customerId){
+		return activeDayService.getTotalCustomerPoints(customerId); 
+	}
+	
+	private int calculateTotalPoints(List<Product> products) { 		
+		int totalRequiredPoints = 0;
+		for (Product product : products){		
+			totalRequiredPoints = totalRequiredPoints += product.getPointsCost();
+		}
+		
+		return totalRequiredPoints;
+	}
+	 
+	private boolean isSuffientPoints(int totalPointsRequired, int customerTotalPoints){
+		logger.info("customer Total Points: " + customerTotalPoints + ", total Points Required:" + totalPointsRequired);
+		if(customerTotalPoints >= totalPointsRequired){
+			logger.info("customer has sufficient points");	
+		}else if(customerTotalPoints < totalPointsRequired){
+			logger.info("customer does not have sufficient points");
+		}
+		return customerTotalPoints >= totalPointsRequired;
+	}
+//	
+//	private int processPurchase(PurchaseRequest purchaseRequest) {
+//		return 9;
+//	}
+//	
+
+
 }
 
