@@ -13,7 +13,17 @@ public class Product {
 	private String  name;
 	private String  code;
 	private int  pointsCost;
+
+	public Product() {		
+ 	}
 	
+	public Product(int id, String name, String code, int pointsCost) {		
+		this.id = id;
+		this.name = name;
+		this.code = code;
+		this.pointsCost = pointsCost;
+	}
+
 	public int getId() {
 		return id;
 	}

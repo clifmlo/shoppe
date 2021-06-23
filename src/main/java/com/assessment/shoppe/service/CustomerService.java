@@ -26,7 +26,7 @@ public class CustomerService {
 			if(customer != null){
 				logger.info("returned customer id : " + customer.getId()); 
 			}else{
-				logger.info("Customer nor found.");
+				logger.info("Customer not found.");
 			}
 			
 			return customer;
