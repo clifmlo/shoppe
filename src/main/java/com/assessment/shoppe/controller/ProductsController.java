@@ -1,5 +1,7 @@
 package com.assessment.shoppe.controller;
 
+import io.micrometer.core.annotation.Timed;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,11 +45,15 @@ public class ProductsController {
 	@Autowired
 	private ActiveDayService activeDayService;
 	
+	//Timed is for timing the execution time and sends this info to prometheus
+	@Timed(value = "retrieving.all.products.time", description = "Time taken to retrive all products")
 	@RequestMapping(value = "/get/all", method = RequestMethod.GET)
 	public List<Product> getAllProducts() {
 		return productService.findAll();		
 	}
 	
+	//Timed is for timing the execution time and sends this info to prometheus
+	@Timed(value = "purchase.time", description = "Time taken to complete a purchase")
 	@RequestMapping(value = "/purchase", method = RequestMethod.POST)
 	public ResponseEntity purchase(@RequestBody PurchaseRequest purchaseRequest) {		
 		logger.info("Received request: " + purchaseRequest.toString());
