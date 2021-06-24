@@ -13,6 +13,14 @@ public class ActiveDay {
 	private int  customerId;
 	private int  activeDays;
 	private int  totalPoints;
+	
+	public ActiveDay(int id, int customerId, int activeDays, int totalPoints) {		
+		this.id = id;
+		this.customerId = customerId;
+		this.activeDays = activeDays;
+		this.totalPoints = totalPoints;
+	}
+	
 	public int getId() {
 		return id;
 	}

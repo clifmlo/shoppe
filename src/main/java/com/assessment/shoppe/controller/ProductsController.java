@@ -176,8 +176,5 @@ public class ProductsController {
 		activeDay.setTotalPoints(balance);
 		activeDayService.updateCustomerPoints(activeDay);
 	}
-	
-
-
 }
 
