@@ -10,7 +10,7 @@ Prerequisites
       
 Installation
   1. Clone the repo
-     $ git clone https://github.com
+     $ git clone https://github.com/clifmlo/shoppe.git
      
   2. Run maven
      $ mvn clean install
