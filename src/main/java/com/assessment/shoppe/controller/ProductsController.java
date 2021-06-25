@@ -61,12 +61,21 @@ public class ProductsController {
 		ResponseObject response = new ResponseObject(); 
 		List<Product> nonExistentProducts = new ArrayList();
 				
+				
 		//The customer ID does not exist	
 		if(!customerExists(purchaseRequest.getCustomerId())){		
 			response.setResultCode("1");
-			response.setResultMsg("Purchase Failed. Customer Does not Exist.");			
+			response.setResultMsg("Purchase Failed. Customer does not Exist.");			
 			
 			return new ResponseEntity<>(response, HttpStatus.OK);			
+		}
+		
+		//Customer exists but not registered for points
+		if(!isCustomerRegisteredForPoints(purchaseRequest.getCustomerId())){
+			response.setResultCode("1");
+			response.setResultMsg("Purchase Failed. Customer is not registered for points.");			
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);
 		}
 		
 		//The customer did not provide any products to purchase
@@ -86,7 +95,7 @@ public class ProductsController {
 			List<String> nonExistentProductCodes = new ArrayList();
 			nonExistentProducts.forEach(p -> nonExistentProductCodes.add(p.getCode()));
 			response.setResultCode("1");
-			response.setResultMsg("Purchase Failed. The following poduct code(s) were not found: " + nonExistentProductCodes.toString());	
+			response.setResultMsg("Purchase Failed. The following product code(s) were not found: " + nonExistentProductCodes.toString());	
 			
 			return new ResponseEntity<>(response, HttpStatus.OK);		
 		}
@@ -102,7 +111,7 @@ public class ProductsController {
 		//Process transaction
 	    processPurchase(purchaseRequest); 
     	response.setResultCode("0");
-		response.setResultMsg("Purchase Processed sucessfully");
+		response.setResultMsg("Purchase processed sucessfully.");
 		
 	    return new ResponseEntity<>(response, HttpStatus.OK);		
 	}
@@ -140,7 +149,7 @@ public class ProductsController {
     
 	private Integer getTotalCustomerPoints(int customerId){		
 		ActiveDay activeDay = activeDayService.getTotalCustomerPoints(customerId);
-	    return Integer.valueOf(activeDay.getTotalPoints());
+		return Integer.valueOf(activeDay.getTotalPoints());
 	}
 	
 	private int calculateTotalPoints(List<Product> products) { 		
@@ -181,6 +190,10 @@ public class ProductsController {
 		ActiveDay activeDay = activeDayService.getTotalCustomerPoints(purchaseRequest.getCustomerId());
 		activeDay.setTotalPoints(balance);
 		activeDayService.updateCustomerPoints(activeDay);
+	}
+	
+	private boolean isCustomerRegisteredForPoints(int customerId) {
+		return activeDayService.getTotalCustomerPoints(customerId) != null;
 	}
 }
 

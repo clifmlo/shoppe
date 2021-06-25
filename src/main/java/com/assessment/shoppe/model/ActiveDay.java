@@ -14,6 +14,10 @@ public class ActiveDay {
 	private int  activeDays;
 	private int  totalPoints;
 	
+	public ActiveDay(){
+		
+	}
+	
 	public ActiveDay(int id, int customerId, int activeDays, int totalPoints) {		
 		this.id = id;
 		this.customerId = customerId;
